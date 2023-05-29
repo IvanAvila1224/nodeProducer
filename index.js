@@ -21,6 +21,55 @@ app.get('/', (req, res, next) => {
   res.send('kafka api - adsoft');
 });
 
+//ESTE ES EL PRIMERO
+const run = async (username) => {
+
+  await producer.connect()
+//    await producer.send()
+  await producer.send({
+    topic: 'test',
+    messages: [ 
+    { 
+      'value': `{"name": "${username}" }` 
+      } 
+        ],
+      })
+    await producer.disconnect()
+    }
+
+    app.get('/like', (req, res, next) => {
+    const username = req.query.name;
+    res.send({ 'name' : username } );
+    run(username).catch(e => console.error(`[example/producer] ${e.message}`, e))
+
+    });
+
+//ESTE ES EL DE REACCIONES
+const runReactions = async (userid, objectid, reactionid) => {
+
+    await producer.connect()
+//    await producer.send()
+    await producer.send({
+      topic: 'reaction',
+      messages: [
+        {
+          'value': `{"userid": "${userid}","objectid": "${objectid}","reactionid": "${reactionid}" }` 
+        }
+      ],
+    })
+    await producer.disconnect()
+}
+
+app.get('/reactions', (req, res, next) => {
+  const userid = req.query.userid;
+  const objectid = req.query.objectid;
+  const reactionid = req.query.reactionid;
+  res.send({ 'userid':userid, 'objectid': objectid, 'reactionid': reactionid });
+  runReactions(userid, objectid, reactionid).catch(e => console.error(`[example/producer] ${e.message}`, e))
+
+});
+
+
 //ESTE ES EL DE COMENTARIOS
 const runComments = async (userid, objectid, message) => {
 
@@ -43,13 +92,6 @@ const objectid = req.query.objectid;
 const message = req.query.message;
 res.send({ 'userid':userid, 'objectid': objectid, 'message': message });
 runComments(userid, objectid, message).catch(e => console.error(`[example/producer] ${e.message}`, e))
-
-});
-
-app.get('/like', (req, res, next) => {
-  const username = req.query.name;
-  res.send({ 'name' : username } );
-  run(username).catch(e => console.error(`[example/producer] ${e.message}`, e))
 
 });
 
