@@ -21,20 +21,30 @@ app.get('/', (req, res, next) => {
   res.send('kafka api - adsoft');
 });
 
-const run = async (username) => {
+//ESTE ES EL DE COMENTARIOS
+const runComments = async (userid, objectid, message) => {
 
-    await producer.connect()
+  await producer.connect()
 //    await producer.send()
-    await producer.send({
-      topic: 'test',
-      messages: [ 
-	{ 
-	  'value': `{"name": "${username}" }` 
-  	} 
-      ],
-    })
-   await producer.disconnect()
+  await producer.send({
+    topic: 'comment',
+    messages: [
+      {
+        'value': `{"userid": "${userid}","objectid": "${objectid}","message": "${message}" }` 
+      }
+    ],
+  })
+  await producer.disconnect()
 }
+
+app.get('/comments', (req, res, next) => {
+const userid = req.query.userid;
+const objectid = req.query.objectid;
+const message = req.query.message;
+res.send({ 'userid':userid, 'objectid': objectid, 'message': message });
+runComments(userid, objectid, message).catch(e => console.error(`[example/producer] ${e.message}`, e))
+
+});
 
 app.get('/like', (req, res, next) => {
   const username = req.query.name;
