@@ -21,79 +21,80 @@ app.get('/', (req, res, next) => {
   res.send('kafka api - ivanavila');
 });
 
-//ESTE ES EL PRIMERO
+
+// topic username username=name
 const run = async (username) => {
-
-  await producer.connect()
-//    await producer.send()
-  await producer.send({
-    topic: 'test',
-    messages: [ 
-    { 
-      'value': `{"name": "${username}" }` 
-      } 
-        ],
-      })
-    await producer.disconnect()
-    }
-
-    app.get('/like', (req, res, next) => {
-    const username = req.query.name;
-    res.send({ 'name' : username } );
-    run(username).catch(e => console.error(`[example/producer] ${e.message}`, e))
-
-    });
-
-//ESTE ES EL DE REACCIONES
-const runReactions = async (userid, objectid, reactionid) => {
 
     await producer.connect()
 //    await producer.send()
     await producer.send({
-      topic: 'reaction',
-      messages: [
-        {
-          'value': `{"userid": "${userid}","objectid": "${objectid}","reactionid": "${reactionid}" }` 
-        }
+      topic: 'test',
+      messages: [ 
+	{ 
+	  'value': `{"name": "${username}" }` 
+  	} 
       ],
     })
-    await producer.disconnect()
+   await producer.disconnect()
 }
 
-app.get('/reactions', (req, res, next) => {
-  const userid = req.query.userid;
-  const objectid = req.query.objectid;
-  const reactionid = req.query.reactionid;
-  res.send({ 'userid':userid, 'objectid': objectid, 'reactionid': reactionid });
-  runReactions(userid, objectid, reactionid).catch(e => console.error(`[example/producer] ${e.message}`, e))
+app.get('/like', (req, res, next) => {
+  const username = req.query.name;
+  res.send({ 'name' : username } );
+  run(username).catch(e => console.error(`[example/producer] ${e.message}`, e))
 
 });
-
-
-//ESTE ES EL DE COMENTARIOS
-const runComments = async (userid, objectid, message) => {
+//node - topic reaction - uId=userId, oId=objectId, rId=reactionId
+const ruun = async (uId, oId, rId) => {
 
   await producer.connect()
 //    await producer.send()
   await producer.send({
-    topic: 'comment',
-    messages: [
-      {
-        'value': `{"userid": "${userid}","objectid": "${objectid}","message": "${message}" }` 
-      }
+    topic: 'reactions',
+    messages: [ 
+{ 
+  'value': `{ "userId": "${uId}",  "objectId": "${oId}", "reactionId": "${rId}"}` 
+  } 
     ],
   })
-  await producer.disconnect()
+ await producer.disconnect()
+}
+
+app.get('/reaction', (req, res, next) => {
+const uId = req.query.userId;
+const oId = req.query.objectId;
+const rId = req.query.reactionId;
+res.send({'userId:': uId, 'objectId': oId,'reactionId' : rId } );
+ruun(uId, oId, rId).catch(e => console.error(`[example/producer] ${e.message}`, e))
+
+});
+
+//node - topic comments    uId=userId, oId=objectId, comment=message
+const r = async (uId, oId, comment) => {
+
+  await producer.connect()
+//    await producer.send()
+  await producer.send({
+    topic: 'comments',
+    messages: [ 
+  { 
+    'value': `{ "userId": "${uId}",  "objectId": "${oId}", "comment": "${comment}"}`
+  } 
+    ],
+  })
+ await producer.disconnect()
 }
 
 app.get('/comments', (req, res, next) => {
-const userid = req.query.userid;
-const objectid = req.query.objectid;
-const message = req.query.message;
-res.send({ 'userid':userid, 'objectid': objectid, 'message': message });
-runComments(userid, objectid, message).catch(e => console.error(`[example/producer] ${e.message}`, e))
+const uId = req.query.userId;
+const oId = req.query.objectId;
+const comment = req.query.comment;
+res.send({'userId:': uId, 'objectId': oId,'comment' : comment} );
+r(uId, oId, comment).catch(e => console.error(`[example/producer] ${e.message}`, e))
 
 });
+
+
 
 app.listen(port,  () => 
 	console.log('listening on port ' + port
